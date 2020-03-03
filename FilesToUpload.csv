@@ -1,5 +1,5 @@
-﻿LocalizacaoAtual;ContentType;BibliotecaDestino;ImovelNomePesquisa;SubtipoCompromissosObras;NomeEntidadeOficial;DataDocumento
-C:\Users\joaojosemendes\file.dwg;Compromissos ou Obras de Urbanização;DropOffLibrary;TermGroup|Imóveis|Teste500;Contrato;PREC;10/01/2014
-C:\Users\joaojosemendes\file2.pdf;Compromissos ou Obras de Urbanização;DropOffLibrary;TermGroup|Imóveis|Teste501;Contrato;PREC;11/01/2014
-C:\Users\joaojosemendes\file3.jpg;Compromissos ou Obras de Urbanização;DropOffLibrary;TermGroup|Imóveis|Teste502;Contrato;PREC;12/01/2014
-C:\Users\joaojosemendes\file4.docx;Compromissos ou Obras de Urbanização;DropOffLibrary;TermGroup|Imóveis|Teste503;Contrato;PREC;13/01/2014
+sourcePath;contentType;destLibrary;destFolder;fileName;Title;Description;Date Created;Filing Reference Number;Client Name
+path\to\file1.pdf;Document;UploadLibrary;folder/subfolder1;uploadedFile1.pdf;Uploaded File 1;Invoice;2018-11-23;RAV/06/00001;Ms Selina Kyle
+path\to\file2.png;Document;UploadLibrary;folder/subfolder2;uploadedFile2.png;Uploaded File 2;Company logo;2016-08-04;RBE/98/754;Mr Bruce Wayne
+path\to\file3.jpg;Document;UploadLibrary;folder/subfolder3;uploadedFile3.jpg;Uploaded File 3;Scanned document;2020-02-12;THX/0/1138;Mr Oswald Chesterfield Cobblepot
+path\to\file4.doc;Document;UploadLibrary;folder/subfolder4;uploadedFile4.doc;Uploaded File 4;Client contact template letter;2019-06-15;TID/14/987;Dr Pamela Lillian Isley
