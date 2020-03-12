@@ -18,8 +18,8 @@ Warning: You should ensure that your metadata does not contain semi-colons, as t
 
 ## Usage
 1. Open a Command Prompt and cd to the location of this script
-2. Run: `PowerShell ./UploadFiles.ps1 -siteUrl https://yourtenancy.sharepoint.com/path/to/sharepoint/site -csvFile FilesToUpload.csv`
-3. The script will write status to both the console and `importFilesLog.log` in the current directory
+2. Run: `PowerShell ./UploadFiles.ps1 -siteUrl https://yourtenancy.sharepoint.com/path/to/sharepoint/site -csvFile FilesToUpload.csv -logFile uploadedFiles.log`
+3. The script will write status to the console and a logfile in the current directory if specified
 
 Credit to [João Mendes][2] for the original script that this is based on.
 
