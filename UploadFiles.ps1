@@ -1,23 +1,28 @@
 # import files to SharePoint online document library
 # Ti Marner - 2020-02-27
 # Parameters:
-#   siteurl
-#   csvfile
+#   siteUrl - url for the SharePoint site to upload to
+#   csvFile - .csv containing a list of files to upload
+#	logFile - optional filename to use for logging messages
 #---------------------------------------------
 #
 [CmdletBinding()]
-    Param(
-        [Parameter(Mandatory = $true)]
-        [string]$siteUrl,
-        [Parameter(Mandatory = $true)]
-        [string]$csvFile
-    )
-# Function
+Param(
+    [Parameter(Mandatory = $true)] [string] $siteUrl,
+    [Parameter(Mandatory = $true)] [string] $csvFile,
+    [Parameter()] [string] $logFile
+)
+
+# main ImportFile function
 function ImportFile {
+
+    # log function
     function Logmsg {
         Param($msg)
         Write-Host $msg
-        Add-Content -Value $msg -Path $logfilename
+        if ($null -ne $logFile) {
+            Add-Content -Value $msg -Path $logFile
+        }
     }
 
     Clear-Host
@@ -35,16 +40,18 @@ function ImportFile {
     }
 
     # define logfile
-    $logfilename = "importFilesLog.log"
     try {
-        $logFile = New-Item -Path . -Name $logfilename -ItemType "file" -Force
+        $logFileCreate = New-Item -Path . -Name $logFile -ItemType "file" -Force
     } catch {
-        throw "Can't write to $logfilename"
+        throw "Can't write to $logFile"
         exit 1
     }
     Logmsg -msg "File import started at $(Get-Date)"
-    Logmsg -msg "CSV file: $csvFile"
-    Logmsg -msg "SharePoint site: $siteUrl"
+    Logmsg -msg "CSV file [$csvFile]"
+    Logmsg -msg "SharePoint site: [$siteUrl]"
+    if ($null -ne $logFile) {
+        Logmsg -msg "Logging messages to [$logFile]"
+    }
 
     # get columns and CSV data
     $csvData = Import-Csv -Path $csvFile -Delimiter ";"
@@ -61,21 +68,22 @@ function ImportFile {
     }
 
     # read files from CSV
-    $i = 0
+    $i = 1
+    Logmsg -msg "Starting upload"
+    Logmsg -msg "-----"
     foreach($csvRow in $csvData) {
-        Logmsg -msg "Uploading file $($i): $($csvRow.sourcePath)"
-        #Logmsg -msg $csvRow
+        #Logmsg -msg "$(Get-Date): uploading file $($i): $($csvRow.sourcePath)"
 
         # test if source file exists
         $results = Test-Path $csvRow.sourcePath
         if ($results -eq $false) {
-            Logmsg -msg "$(Get-Date -Format "yyyy-MM-dd") - Error - file not found, Path: $($csvRow.sourcePath)"
+            Logmsg -msg "$(Get-Date): ERROR - file not found, Path: $($csvRow.sourcePath)"
         } else {
             # source exists, test if document library exists
             $docLibExists = Get-PnPList $csvRow.destLibrary
 
             if ($null -eq $docLibExists) {
-                Logmsg -msg "$(Get-Date -Format "yyyy-MM-dd") - Error - library $($csvRow.destLibrary) does not exist in site: $siteUrl"
+                Logmsg -msg "$(Get-Date): ERROR - library [$($csvRow.destLibrary)] not found in site [$siteUrl]"
             } else {
                 # doc library is good, get columns
                 $libraryColumns = Get-PnPField -List $csvRow.destLibrary.trim()
@@ -97,7 +105,7 @@ function ImportFile {
                                 $listId = $libraryColumn.LookupList
                                 $listItem = (Get-PnPListItem -List $listId).FieldValues | Where-Object {$_.Title -eq $columnValue.trim()}
                                 if ($null -eq $listItem) {
-                                    Logmsg -msg "$(Get-Date -Format "yyyy-MM-dd") - Error - store: $columnValue does not exist in the list of stores"
+                                    Logmsg -msg "$(Get-Date): ERROR - store [$columnValue] does not exist in the list of stores"
                                     $addColumnToValues = $false
                                 } else {
                                     $columnValue = $listItem.ID
@@ -112,14 +120,11 @@ function ImportFile {
                                 # try to convert
                                 $dt = Get-Date($columnValue) -format $culture.DateTimeFormat.ShortDatePattern
                                 $columnValue = [datetime]::ParseExact($dt, $culture.DateTimeFormat.ShortDatePattern, $null)
-                                #Logmsg -msg "DateTime value is $columnValue"
                                 $addColumnToValues = $true
                             } else {
                                 $addColumnToValues = $false
                             }
                         }
-
-                        #Logmsg -msg "column $csvColumnName, TypeAsString is $($libraryColumn.TypeAsString), InternalName is $($libraryColumn.InternalName)"
 
                         # add column to collection if it's valid
                         # use the internal column name in this library
@@ -137,15 +142,15 @@ function ImportFile {
 
                     # add file
                     if ($null -eq $siteFolder) {
-                        Logmsg -msg "$(Get-Date -Format "s") - Error uploading file to SharePoint site: $siteUrl, Document Library: $($csvRow.destLibrary), file: $($csvRow.sourcePath), Unable to create folder: $destPath"
+                        Logmsg -msg "$(Get-Date): ERROR - cannot upload file to SharePoint site [$siteUrl], document Library [$($csvRow.destLibrary)], file [$($csvRow.sourcePath)]. Unable to create folder [$destPath]"
                     } else {
                         # set content type for file
                         #$values.Add("ContentTypeId", $???)
-                        #Write-Host "-Path "+$csvRow.sourcePath+" -Folder "+$destPath+" -NewFileName "+$csvRow.fileName+" -Values "+$values
                         $null = Add-PnPFile -Path $csvRow.sourcePath -Folder $destPath -NewFileName $csvRow.fileName -Values $values #-ContentType $csvRow.contentType
+                        Logmsg -msg "$(Get-Date): file $($i) uploaded - [$($csvRow.sourcePath)]"
                     }
                 } catch {
-                    Logmsg -msg "$(Get-Date -Format "s") - Error uploading file to SharePoint site: $siteUrl, Document Library: $($csvRow.destLibrary), file: $($csvRow.sourcePath), Error: $($_.Exception.Message)"
+                    Logmsg -msg "$(Get-Date): ERROR - cannot upload file to SharePoint site [$siteUrl], document Library [$($csvRow.destLibrary)], file [$($csvRow.sourcePath)]. Exception: $($_.Exception.Message)"
                 }
             }
         }
@@ -154,7 +159,6 @@ function ImportFile {
     }
 
     Logmsg -msg "--- Import finished at $(Get-Date)"
-
     Disconnect-PnPOnline
 }
 
